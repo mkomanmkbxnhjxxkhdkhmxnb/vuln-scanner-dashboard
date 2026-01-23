@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerability Scanner Dashboard</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --info-color: #3498db;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            border: none;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .header-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header-card h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 2.5rem;
+        }
+
+        .header-card p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .severity-critical { color: #8e44ad !important; background-color: #f8d7da; }
+        .severity-high { color: var(--danger-color) !important; background-color: #f8d7da; }
+        .severity-medium { color: var(--warning-color) !important; background-color: #fff3cd; }
+        .severity-low { color: var(--info-color) !important; background-color: #d1ecf1; }
+        .severity-info { color: var(--success-color) !important; background-color: #d4edda; }
+
+        .badge-critical { background-color: #8e44ad; }
+        .badge-high { background-color: var(--danger-color); }
+        .badge-medium { background-color: var(--warning-color); }
+        .badge-low { background-color: var(--info-color); }
+        .badge-info { background-color: var(--success-color); }
+
+        .scan-form {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .btn-scan {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-scan:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .vuln-item {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+
+        .vuln-item.critical { border-left-color: #8e44ad; }
+        .vuln-item.high { border-left-color: #e74c3c; }
+        .vuln-item.medium { border-left-color: #f39c12; }
+        .vuln-item.low { border-left-color: #3498db; }
+        .vuln-item.info { border-left-color: #27ae60; }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .scan-history-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        #vulnerabilityChart {
+            max-height: 300px;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="card header-card">
+            <h1><i class="fas fa-shield-alt"></i> Vulnerability Scanner Dashboard</h1>
+            <p>Automated Security Assessment & Vulnerability Detection Platform</p>
+            <p class="mb-0"><small>Developed by: Ishrat Jahan Naina | IIUC CSE</small></p>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value" id="totalScans">0</div>
+                    <div class="stat-label">Total Scans</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value text-danger" id="totalVulns">0</div>
+                    <div class="stat-label">Vulnerabilities Found</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value text-warning" id="criticalVulns">0</div>
+                    <div class="stat-label">Critical/High</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-value text-success" id="lastScan">Never</div>
+                    <div class="stat-label">Last Scan</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Scan Form -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body scan-form">
+                        <h4 class="mb-4"><i class="fas fa-rocket"></i> Start New Scan</h4>
+                        <form id="scanForm">
+                            <div class="mb-3">
+                                <label class="form-label">Target (Domain/IP)</label>
+                                <input type="text" class="form-control" id="target" 
+                                       placeholder="example.com or 192.168.1.1" required>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i> Only scan targets you have permission to test!
+                                </small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Scan Type</label>
+                                <select class="form-select" id="scanType">
+                                    <option value="quick">Quick Scan (Ports & Services)</option>
+                                    <option value="web">Web Application Scan</option>
+                                    <option value="full">Full Scan (Comprehensive)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-scan w-100">
+                                <i class="fas fa-play"></i> Start Scanning
+                            </button>
+                        </form>
+                        
+                        <div class="loading mt-4" id="loading">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-3">Scanning in progress... Please wait</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vulnerability Distribution Chart -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-chart-pie"></i> Vulnerability Distribution</h5>
+                        <canvas id="vulnerabilityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scan Results -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="mb-4"><i class="fas fa-bug"></i> Latest Vulnerabilities</h4>
+                        <div id="vulnerabilities">
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-shield-alt fa-3x mb-3"></i>
+                                <p>No vulnerabilities detected yet. Start a scan to begin.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scan History -->
+        <div class="card">
+            <div class="card-body">
+                <h4 class="mb-4"><i class="fas fa-history"></i> Scan History</h4>
+                <div class="table-responsive scan-history-table">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Target</th>
+                                <th>Scan Type</th>
+                                <th>Status</th>
+                                <th>Vulnerabilities</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scanHistory">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No scan history available</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let vulnerabilityChart = null;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStatistics();
+            loadScanHistory();
+            initializeChart();
+        });
+
+        // Handle scan form submission
+        document.getElementById('scanForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const target = document.getElementById('target').value;
+            const scanType = document.getElementById('scanType').value;
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.querySelector('.btn-scan').disabled = true;
+            
+            try {
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ target, scan_type: scanType })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Success
+                    showAlert('success', `Scan completed! Found ${data.vulnerabilities_found} vulnerabilities.`);
+                    loadScanDetails(data.scan_id);
+                    loadStatistics();
+                    loadScanHistory();
+                } else {
+                    showAlert('danger', data.error || 'Scan failed');
+                }
+            } catch (error) {
+                showAlert('danger', 'Error: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.querySelector('.btn-scan').disabled = false;
+            }
+        });
+
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/statistics');
+                const data = await response.json();
+                
+                document.getElementById('totalScans').textContent = data.total_scans;
+                document.getElementById('totalVulns').textContent = data.total_vulnerabilities;
+                document.getElementById('criticalVulns').textContent = 
+                    (data.severity_distribution.critical + data.severity_distribution.high);
+                
+                // Update chart
+                updateChart(data.severity_distribution);
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        // Load scan history
+        async function loadScanHistory() {
+            try {
+                const response = await fetch('/api/scans');
+                const scans = await response.json();
+                
+                const tbody = document.getElementById('scanHistory');
+                
+                if (scans.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No scan history available</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = scans.map(scan => `
+                    <tr>
+                        <td>${scan.id}</td>
+                        <td><code>${scan.target}</code></td>
+                        <td><span class="badge bg-primary">${scan.scan_type}</span></td>
+                        <td><span class="badge bg-${scan.status === 'completed' ? 'success' : 'warning'}">${scan.status}</span></td>
+                        <td><button class="btn btn-sm btn-info" onclick="loadScanDetails(${scan.id})">View</button></td>
+                        <td><small>${scan.started_at}</small></td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="exportPDF(${scan.id})">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteScan(${scan.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                // Update last scan time
+                if (scans.length > 0) {
+                    document.getElementById('lastScan').textContent = formatDate(scans[0].started_at);
+                }
+            } catch (error) {
+                console.error('Error loading scan history:', error);
+            }
+        }
+
+        // Load scan details
+        async function loadScanDetails(scanId) {
+            try {
+                const response = await fetch(`/api/scan/${scanId}`);
+                const data = await response.json();
+                
+                const vulnContainer = document.getElementById('vulnerabilities');
+                
+                if (data.vulnerabilities.length === 0) {
+                    vulnContainer.innerHTML = '<div class="alert alert-success">No vulnerabilities found! Target appears secure.</div>';
+                    return;
+                }
+                
+                vulnContainer.innerHTML = data.vulnerabilities.map(vuln => `
+                    <div class="vuln-item ${vuln.severity}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-0">${vuln.title}</h6>
+                            <span class="badge badge-${vuln.severity}">${vuln.severity.toUpperCase()}</span>
+                        </div>
+                        <p class="mb-2"><strong>Description:</strong> ${vuln.description}</p>
+                        <p class="mb-0"><strong>Recommendation:</strong> ${vuln.recommendation}</p>
+                        <small class="text-muted"><i class="fas fa-clock"></i> ${vuln.discovered_at}</small>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading scan details:', error);
+            }
+        }
+
+        // Initialize chart
+        function initializeChart() {
+            const ctx = document.getElementById('vulnerabilityChart').getContext('2d');
+            vulnerabilityChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low', 'Info'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            '#8e44ad',
+                            '#e74c3c',
+                            '#f39c12',
+                            '#3498db',
+                            '#27ae60'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update chart
+        function updateChart(distribution) {
+            if (vulnerabilityChart) {
+                vulnerabilityChart.data.datasets[0].data = [
+                    distribution.critical,
+                    distribution.high,
+                    distribution.medium,
+                    distribution.low,
+                    distribution.info
+                ];
+                vulnerabilityChart.update();
+            }
+        }
+
+        // Export PDF
+        function exportPDF(scanId) {
+            window.open(`/api/scan/${scanId}/export`, '_blank');
+        }
+
+        // Delete scan
+        async function deleteScan(scanId) {
+            if (!confirm('Are you sure you want to delete this scan?')) return;
+            
+            try {
+                const response = await fetch(`/api/scan/${scanId}/delete`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showAlert('success', 'Scan deleted successfully');
+                    loadScanHistory();
+                    loadStatistics();
+                }
+            } catch (error) {
+                showAlert('danger', 'Error deleting scan');
+            }
+        }
+
+        // Show alert
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-custom`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.querySelector('.dashboard-container').insertBefore(
+                alertDiv, 
+                document.querySelector('.dashboard-container').firstChild
+            );
+            
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+            return `${Math.floor(diff / 86400)} days ago`;
+        }
+    </script>
+</body>
+</html>
